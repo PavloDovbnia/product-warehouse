@@ -22,7 +22,11 @@ public class ItemPropertiesHolder implements Serializable {
         return (ItemPropertyValue<T>) properties.get(propertyToken);
     }
 
-    public <T> void addProperties(Map<String, ItemPropertyValue<T>> properties) {
+    public Map<String, ItemPropertyValue<?>> getProperties() {
+        return properties;
+    }
+
+    public void addProperties(Map<String, ItemPropertyValue<?>> properties) {
         this.properties.putAll(properties);
     }
 

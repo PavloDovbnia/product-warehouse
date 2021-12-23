@@ -1,11 +1,13 @@
 package com.rost.productwarehouse.itemproperty.dao;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.rost.productwarehouse.itemproperty.ItemLevel;
 import com.rost.productwarehouse.itemproperty.ItemProperty;
 import com.rost.productwarehouse.itemproperty.ItemPropertyValueDataType;
 import com.rost.productwarehouse.itemproperty.ItemPropertyValueType;
 import com.rost.productwarehouse.utils.DbUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -45,11 +47,14 @@ public class ItemPropertyDaoImpl implements ItemPropertyDao {
 
     @Override
     public List<ItemProperty> getProperties(List<ItemLevel> itemLevels) {
-        String sql = "select id, token, name, item_level, type, data_type " +
-                "from item_property " +
-                "where item_level in (:itemLevels) ";
-        SqlParameterSource params = new MapSqlParameterSource("itemLevels", itemLevels.stream().map(ItemLevel::getName).collect(Collectors.toList()));
-        return jdbcTemplate.query(sql, params, new ItemPropertiesExtractor());
+        if (CollectionUtils.isNotEmpty(itemLevels)) {
+            String sql = "select id, token, name, item_level, type, data_type " +
+                    "from item_property " +
+                    "where item_level in (:itemLevels) ";
+            SqlParameterSource params = new MapSqlParameterSource("itemLevels", itemLevels.stream().map(ItemLevel::getName).collect(Collectors.toList()));
+            return jdbcTemplate.query(sql, params, new ItemPropertiesExtractor());
+        }
+        return Lists.newArrayList();
     }
 
     @Override

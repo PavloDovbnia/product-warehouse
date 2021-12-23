@@ -8,6 +8,7 @@ import com.rost.productwarehouse.menu.MenuItem;
 import com.rost.productwarehouse.menu.MenuItemsGroup;
 import com.rost.productwarehouse.security.Role;
 import com.rost.productwarehouse.security.dao.RoleMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -34,18 +35,21 @@ public class MenuDaoImpl implements MenuDao {
 
     @Override
     public Menu getMenu(List<Role.Type> roleTypes) {
-        String sql = "select distinct r.id role_id, r.type role_type, i.id menu_item_id, i.name menu_item_name, i.url menu_item_url, " +
-                " i.access_type menu_item_access_type, g.id group_id, g.name group_name " +
-                " from roles r " +
-                " join menu m " +
-                " on r.id = m.role_id " +
-                " join menu_item i " +
-                " on m.menu_item_id = i.id " +
-                " left join menu_items_group g " +
-                " on m.menu_items_group_id = g.id " +
-                " where r.type in (:roleTypes) " +
-                " order by group_name, menu_item_name ";
-        return jdbcTemplate.query(sql, new MapSqlParameterSource("roleTypes", roleTypes.stream().map(Role.Type::name).collect(Collectors.toList())), new MenuExtractor());
+        if (CollectionUtils.isNotEmpty(roleTypes)) {
+            String sql = "select distinct r.id role_id, r.type role_type, i.id menu_item_id, i.name menu_item_name, i.url menu_item_url, " +
+                    " i.access_type menu_item_access_type, g.id group_id, g.name group_name " +
+                    " from roles r " +
+                    " join menu m " +
+                    " on r.id = m.role_id " +
+                    " join menu_item i " +
+                    " on m.menu_item_id = i.id " +
+                    " left join menu_items_group g " +
+                    " on m.menu_items_group_id = g.id " +
+                    " where r.type in (:roleTypes) " +
+                    " order by group_name, menu_item_name ";
+            return jdbcTemplate.query(sql, new MapSqlParameterSource("roleTypes", roleTypes.stream().map(Role.Type::name).collect(Collectors.toList())), new MenuExtractor());
+        }
+        return null;
     }
 
     private static class MenuExtractor implements ResultSetExtractor<Menu> {

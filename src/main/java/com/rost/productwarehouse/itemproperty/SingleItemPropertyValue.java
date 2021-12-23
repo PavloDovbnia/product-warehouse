@@ -8,6 +8,9 @@ public class SingleItemPropertyValue<T> implements ItemPropertyValue<T> {
         this.value = value;
     }
 
+    public SingleItemPropertyValue() {
+    }
+
     @Override
     public T getValue() {
         return value;

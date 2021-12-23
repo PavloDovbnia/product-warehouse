@@ -1,5 +1,7 @@
 package com.rost.productwarehouse.itemproperty;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -62,6 +64,7 @@ public class ItemProperty implements Serializable {
         this.itemLevel = itemLevel;
     }
 
+    @JsonIgnore
     public boolean isNew() {
         return getId() == 0L;
     }

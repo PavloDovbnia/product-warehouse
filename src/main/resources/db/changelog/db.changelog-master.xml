@@ -16,4 +16,12 @@
         <sqlFile path="/changes/init-menu-structure.sql"/>
     </changeSet>
 
+    <changeSet id="4" author="rost">
+        <sqlFile path="/changes/init-items-data.sql"/>
+    </changeSet>
+
+    <changeSet id="5" author="rost">
+        <sqlFile path="/changes/init-menu-manager.sql"/>
+    </changeSet>
+
 </databaseChangeLog>

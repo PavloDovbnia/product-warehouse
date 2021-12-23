@@ -1,6 +1,8 @@
 package com.rost.productwarehouse.product.dao;
 
+import com.google.common.collect.Lists;
 import com.rost.productwarehouse.product.Product;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -23,9 +25,18 @@ public class ProductDaoImpl implements ProductDao {
     }
 
     @Override
+    public List<Product> getProducts() {
+        String sql = "select id, name from product";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new Product(rs.getLong("id"), rs.getString("name")));
+    }
+
+    @Override
     public List<Product> getProducts(List<Long> productsIds) {
-        String sql = "select id, name from product where id in (:productsIds)";
-        return jdbcTemplate.query(sql, new MapSqlParameterSource("productsIds", productsIds), (rs, rowNum) -> new Product(rs.getLong("id"), rs.getString("name")));
+        if (CollectionUtils.isNotEmpty(productsIds)) {
+            String sql = "select id, name from product where id in (:productsIds)";
+            return jdbcTemplate.query(sql, new MapSqlParameterSource("productsIds", productsIds), (rs, rowNum) -> new Product(rs.getLong("id"), rs.getString("name")));
+        }
+        return Lists.newArrayList();
     }
 
     @Override
@@ -50,7 +61,14 @@ public class ProductDaoImpl implements ProductDao {
 
     @Override
     public void deleteProduct(long productId) {
-        String sql = "delete from product where id = :id";
+        String sql = "delete from product " +
+                "where id = :id";
         jdbcTemplate.update(sql, new MapSqlParameterSource("id", productId));
+    }
+
+    @Override
+    public void deleteProductFromGroup(long productId) {
+        String sql = "delete from product_to_product_group where product_id = :productId";
+        jdbcTemplate.update(sql, new MapSqlParameterSource("productId", productId));
     }
 }

@@ -13,9 +13,15 @@ public interface ItemPropertyValueDao {
 
     Map<Long, Map<String, ItemPropertyValue<?>>> getManufacturersProperties(List<Long> manufacturersIds);
 
-    void saveProductValues(long productId, Map<Long, ItemPropertyValue<?>> values);
+    void saveProductValues(long productId, Map<String, ItemPropertyValue<?>> values);
 
-    void saveGroupValues(long groupId, Map<Long, ItemPropertyValue<?>> values);
+    void saveGroupValues(long groupId, Map<String, ItemPropertyValue<?>> values);
 
-    void saveManufacturerValues(long manufacturerId, Map<Long, ItemPropertyValue<?>> values);
+    void saveManufacturerValues(long manufacturerId, Map<String, ItemPropertyValue<?>> values);
+
+    void deleteProductValues(long productId);
+
+    void deleteGroupValues(long groupId);
+
+    void deleteManufacturerValues(long manufacturerId);
 }

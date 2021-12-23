@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
-import com.rost.productwarehouse.itemproperty.ItemProperty;
-import com.rost.productwarehouse.itemproperty.ItemPropertyValue;
-import com.rost.productwarehouse.itemproperty.MultipleItemPropertyValue;
-import com.rost.productwarehouse.itemproperty.SingleItemPropertyValue;
+import com.rost.productwarehouse.itemproperty.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +23,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Repository
 public class ItemPropertyValueDaoImpl implements ItemPropertyValueDao {
@@ -95,36 +91,41 @@ public class ItemPropertyValueDaoImpl implements ItemPropertyValueDao {
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public void saveProductValues(long productId, Map<Long, ItemPropertyValue<?>> values) {
+    public void saveProductValues(long productId, Map<String, ItemPropertyValue<?>> values) {
         deleteProductValues(productId, values);
         addProductValues(productId, values);
     }
 
-    private void deleteProductValues(long productId, Map<Long, ItemPropertyValue<?>> values) {
-        List<Long> propertiesIds = values.keySet().stream().filter(id -> id > 0L).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(propertiesIds)) {
-            String sql = "delete from product_property_value " +
-                    "where product_id = :productId " +
-                    "and property_id in (:propertiesIds)";
+    private void deleteProductValues(long productId, Map<String, ItemPropertyValue<?>> values) {
+        if (MapUtils.isNotEmpty(values)) {
+            String sql = "delete v from product_property_value v " +
+                    "join item_property p " +
+                    "on v.property_id = p.id " +
+                    "where v.product_id = :productId " +
+                    "and  p.token in (:tokens) " +
+                    "and p.item_level = :itemLevel ";
             SqlParameterSource params = new MapSqlParameterSource("productId", productId)
-                    .addValue("propertiesIds", propertiesIds);
+                    .addValue("tokens", values.keySet())
+                    .addValue("itemLevel", ItemLevel.PRODUCT.name());
             jdbcTemplate.update(sql, params);
         }
     }
 
-    private void addProductValues(long productId, Map<Long, ItemPropertyValue<?>> values) {
+    private void addProductValues(long productId, Map<String, ItemPropertyValue<?>> values) {
         if (MapUtils.isNotEmpty(values)) {
             String sql = "insert into product_property_value (product_id, property_id, property_value) " +
                     "select :productId, p.id, :value " +
                     "from item_property p " +
-                    "where p.id = :propertyId";
+                    "where p.token = :token " +
+                    "and p.item_level = :itemLevel";
 
             SqlParameterSource[] batchParams = new MapSqlParameterSource[values.size()];
             int i = 0;
-            for (Map.Entry<Long, ItemPropertyValue<?>> entry : values.entrySet()) {
+            for (Map.Entry<String, ItemPropertyValue<?>> entry : values.entrySet()) {
                 batchParams[i] = new MapSqlParameterSource("productId", productId)
                         .addValue("value", entry.getValue().getValue())
-                        .addValue("propertyId", entry.getKey());
+                        .addValue("token", entry.getKey())
+                        .addValue("itemLevel", ItemLevel.PRODUCT.name());
                 i++;
             }
             jdbcTemplate.batchUpdate(sql, batchParams);
@@ -132,36 +133,41 @@ public class ItemPropertyValueDaoImpl implements ItemPropertyValueDao {
     }
 
     @Override
-    public void saveGroupValues(long groupId, Map<Long, ItemPropertyValue<?>> values) {
+    public void saveGroupValues(long groupId, Map<String, ItemPropertyValue<?>> values) {
         deleteGroupValues(groupId, values);
         addGroupValues(groupId, values);
     }
 
-    private void deleteGroupValues(long groupId, Map<Long, ItemPropertyValue<?>> values) {
-        List<Long> propertiesIds = values.keySet().stream().filter(id -> id > 0L).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(propertiesIds)) {
-            String sql = "delete from product_group_property_value " +
-                    "where product_group_id = :groupId " +
-                    "and property_id in (:propertiesIds)";
+    private void deleteGroupValues(long groupId, Map<String, ItemPropertyValue<?>> values) {
+        if (MapUtils.isNotEmpty(values)) {
+            String sql = "delete v from product_group_property_value v " +
+                    "join item_property p " +
+                    "on v.property_id = p.id " +
+                    "where v.product_group_id = :groupId " +
+                    "and p.token in (:tokens) " +
+                    "and p.item_level = :itemLevel";
             SqlParameterSource params = new MapSqlParameterSource("groupId", groupId)
-                    .addValue("propertiesIds", propertiesIds);
+                    .addValue("tokens", values.keySet())
+                    .addValue("itemLevel", ItemLevel.PRODUCT_GROUP.name());
             jdbcTemplate.update(sql, params);
         }
     }
 
-    private void addGroupValues(long groupId, Map<Long, ItemPropertyValue<?>> values) {
+    private void addGroupValues(long groupId, Map<String, ItemPropertyValue<?>> values) {
         if (MapUtils.isNotEmpty(values)) {
             String sql = "insert into product_group_property_value (product_group_id, property_id, property_value) " +
                     "select :groupId, p.id, :value " +
                     "from item_property p " +
-                    "where p.id = :propertyId";
+                    "where p.token = :token " +
+                    "and p.item_level = :itemLevel";
 
             SqlParameterSource[] batchParams = new MapSqlParameterSource[values.size()];
             int i = 0;
-            for (Map.Entry<Long, ItemPropertyValue<?>> entry : values.entrySet()) {
+            for (Map.Entry<String, ItemPropertyValue<?>> entry : values.entrySet()) {
                 batchParams[i] = new MapSqlParameterSource("groupId", groupId)
                         .addValue("value", entry.getValue().getValue())
-                        .addValue("propertyId", entry.getKey());
+                        .addValue("token", entry.getKey())
+                        .addValue("itemLevel", ItemLevel.PRODUCT_GROUP.name());
                 i++;
             }
             jdbcTemplate.batchUpdate(sql, batchParams);
@@ -169,40 +175,63 @@ public class ItemPropertyValueDaoImpl implements ItemPropertyValueDao {
     }
 
     @Override
-    public void saveManufacturerValues(long manufacturerId, Map<Long, ItemPropertyValue<?>> values) {
+    public void saveManufacturerValues(long manufacturerId, Map<String, ItemPropertyValue<?>> values) {
         deleteManufacturerValues(manufacturerId, values);
         addManufacturerValues(manufacturerId, values);
     }
 
-    private void deleteManufacturerValues(long manufacturerId, Map<Long, ItemPropertyValue<?>> values) {
-        List<Long> propertiesIds = values.keySet().stream().filter(id -> id > 0L).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(propertiesIds)) {
-            String sql = "delete from manufacturer_property_value " +
-                    "where manufacturer_id = :manufacturerId " +
-                    "and property_id in (:propertiesIds)";
+    private void deleteManufacturerValues(long manufacturerId, Map<String, ItemPropertyValue<?>> values) {
+        if (MapUtils.isNotEmpty(values)) {
+            String sql = "delete v from manufacturer_property_value v " +
+                    "join item_property p " +
+                    "on v.property_id = p.id " +
+                    "where v.manufacturer_id = :manufacturerId " +
+                    "and p.token in (:tokens) " +
+                    "and p.item_level = :itemLevel";
             SqlParameterSource params = new MapSqlParameterSource("manufacturerId", manufacturerId)
-                    .addValue("propertiesIds", propertiesIds);
+                    .addValue("tokens", values.keySet())
+                    .addValue("itemLevel", ItemLevel.MANUFACTURER.name());
             jdbcTemplate.update(sql, params);
         }
     }
 
-    private void addManufacturerValues(long manufacturerId, Map<Long, ItemPropertyValue<?>> values) {
+    private void addManufacturerValues(long manufacturerId, Map<String, ItemPropertyValue<?>> values) {
         if (MapUtils.isNotEmpty(values)) {
             String sql = "insert into manufacturer_property_value (manufacturer_id, property_id, property_value) " +
                     "select :manufacturerId, p.id, :value " +
                     "from item_property p " +
-                    "where p.id = :propertyId";
+                    "where p.token = :token " +
+                    "and p.item_level = :itemLevel";
 
             SqlParameterSource[] batchParams = new MapSqlParameterSource[values.size()];
             int i = 0;
-            for (Map.Entry<Long, ItemPropertyValue<?>> entry : values.entrySet()) {
+            for (Map.Entry<String, ItemPropertyValue<?>> entry : values.entrySet()) {
                 batchParams[i] = new MapSqlParameterSource("manufacturerId", manufacturerId)
                         .addValue("value", entry.getValue().getValue())
-                        .addValue("propertyId", entry.getKey());
+                        .addValue("token", entry.getKey())
+                        .addValue("itemLevel", ItemLevel.MANUFACTURER.name());
                 i++;
             }
             jdbcTemplate.batchUpdate(sql, batchParams);
         }
+    }
+
+    @Override
+    public void deleteProductValues(long productId) {
+        String sql = "delete from product_property_value where product_id = :productId";
+        jdbcTemplate.update(sql, new MapSqlParameterSource("productId", productId));
+    }
+
+    @Override
+    public void deleteGroupValues(long groupId) {
+        String sql = "delete from product_group_property_value where product_group_id = :groupId";
+        jdbcTemplate.update(sql, new MapSqlParameterSource("groupId", groupId));
+    }
+
+    @Override
+    public void deleteManufacturerValues(long manufacturerId) {
+        String sql = "delete from manufacturer_property_value where manufacturer_id = :manufacturerId";
+        jdbcTemplate.update(sql, new MapSqlParameterSource("manufacturerId", manufacturerId));
     }
 
     private static class PropertiesValuesExtractor implements ResultSetExtractor<Map<Long, Map<String, ItemPropertyValue<?>>>> {

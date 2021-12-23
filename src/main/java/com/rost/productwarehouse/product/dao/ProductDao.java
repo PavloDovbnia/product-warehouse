@@ -6,9 +6,13 @@ import java.util.List;
 
 public interface ProductDao {
 
+    List<Product> getProducts();
+
     List<Product> getProducts(List<Long> productsIds);
 
     long storeProduct(Product product);
 
     void deleteProduct(long productId);
+
+    void deleteProductFromGroup(long productId);
 }

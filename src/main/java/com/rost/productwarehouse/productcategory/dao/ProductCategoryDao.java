@@ -11,4 +11,6 @@ public interface ProductCategoryDao {
     long saveCategory(ProductCategory productCategory);
 
     void removeCategory(long categoryId);
+
+    void removeCategoryGroups(long categoryId);
 }

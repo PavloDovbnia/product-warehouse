@@ -1,11 +1,13 @@
 package com.rost.productwarehouse.manufacturer;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.rost.productwarehouse.itemproperty.ItemPropertiesHolder;
 import com.rost.productwarehouse.productgroup.ProductGroup;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class Manufacturer implements Serializable {
 
@@ -15,6 +17,7 @@ public class Manufacturer implements Serializable {
     private String name;
     private ItemPropertiesHolder properties = new ItemPropertiesHolder();
     private List<ProductGroup> productGroups;
+    private Set<Long> productGroupsIds;
 
     public Manufacturer() {
     }
@@ -52,8 +55,21 @@ public class Manufacturer implements Serializable {
         this.productGroups = productGroups;
     }
 
+    @JsonIgnore
     public boolean isNew() {
         return 0 == id;
+    }
+
+    public void setToNew() {
+        this.id = 0L;
+    }
+
+    public Set<Long> getProductGroupsIds() {
+        return productGroupsIds;
+    }
+
+    public void setProductGroupsIds(Set<Long> productGroupsIds) {
+        this.productGroupsIds = productGroupsIds;
     }
 
     @Override
@@ -76,6 +92,7 @@ public class Manufacturer implements Serializable {
                 ", name='" + name + '\'' +
                 ", properties=" + properties +
                 ", productGroups=" + productGroups +
+                ", productGroupsIds=" + productGroupsIds +
                 '}';
     }
 }

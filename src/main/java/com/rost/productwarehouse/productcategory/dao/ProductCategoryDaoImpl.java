@@ -56,4 +56,10 @@ public class ProductCategoryDaoImpl implements ProductCategoryDao {
         String sql = "delete from product_group_category where id = :id";
         jdbcTemplate.update(sql, new MapSqlParameterSource("id", categoryId));
     }
+
+    @Override
+    public void removeCategoryGroups(long categoryId) {
+        String sql = "delete from product_group_to_product_group_category where product_group_category_id = :categoryId";
+        jdbcTemplate.update(sql, new MapSqlParameterSource("categoryId", categoryId));
+    }
 }

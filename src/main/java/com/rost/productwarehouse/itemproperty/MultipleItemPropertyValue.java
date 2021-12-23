@@ -10,6 +10,9 @@ public class MultipleItemPropertyValue<T> implements ItemPropertyValue<T> {
         this.values = values;
     }
 
+    public MultipleItemPropertyValue() {
+    }
+
     @Override
     public List<T> getValue() {
         return values;

@@ -75,7 +75,7 @@ public class ItemPropertyServiceImpl implements ItemPropertyService {
     }
 
     @Override
-    public void saveProductValues(long itemId, Map<Long, ItemPropertyValue<?>> values, ItemLevel itemLevel) {
+    public void saveItemValues(long itemId, Map<String, ItemPropertyValue<?>> values, ItemLevel itemLevel) {
         switch (itemLevel) {
             case PRODUCT:
                 itemPropertyValueDao.saveProductValues(itemId, values);
@@ -85,6 +85,21 @@ public class ItemPropertyServiceImpl implements ItemPropertyService {
                 break;
             case MANUFACTURER:
                 itemPropertyValueDao.saveManufacturerValues(itemId, values);
+                break;
+        }
+    }
+
+    @Override
+    public void deleteItemValues(long itemId, ItemLevel itemLevel) {
+        switch (itemLevel) {
+            case PRODUCT:
+                itemPropertyValueDao.deleteProductValues(itemId);
+                break;
+            case PRODUCT_GROUP:
+                itemPropertyValueDao.deleteGroupValues(itemId);
+                break;
+            case MANUFACTURER:
+                itemPropertyValueDao.deleteManufacturerValues(itemId);
                 break;
         }
     }

@@ -18,5 +18,7 @@ public interface ItemPropertyService {
 
     void deleteProperty(long id);
 
-    void saveProductValues(long itemId, Map<Long, ItemPropertyValue<?>> values, ItemLevel itemLevel);
+    void saveItemValues(long itemId, Map<String, ItemPropertyValue<?>> values, ItemLevel itemLevel);
+
+    void deleteItemValues(long itemId, ItemLevel itemLevel);
 }

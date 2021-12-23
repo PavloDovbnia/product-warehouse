@@ -1,5 +1,6 @@
 package com.rost.productwarehouse.product;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.rost.productwarehouse.itemproperty.ItemPropertiesHolder;
 import com.rost.productwarehouse.productgroup.ProductGroup;
 
@@ -51,8 +52,13 @@ public class Product implements Serializable {
         return properties;
     }
 
+    @JsonIgnore
     public boolean isNew() {
         return id == 0;
+    }
+
+    public void setToNew() {
+        this.id = 0L;
     }
 
     @Override
