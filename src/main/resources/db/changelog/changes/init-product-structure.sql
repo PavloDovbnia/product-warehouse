@@ -1,3 +1,9 @@
+# drop table if exists product_to_product_group, product_group_to_manufacturer, product_group_to_product_group_category,
+#     product_property_value, product_group_property_value, manufacturer_property_value;
+#
+# drop table if exists product, product_group, manufacturer, product_group_category, item_property;
+
+
 create table product
 (
     id   bigint       not null auto_increment primary key,
@@ -16,8 +22,8 @@ create table product_to_product_group
     product_group_id bigint not null,
     primary key (product_id, product_group_id),
     index idx_product_group_id (product_group_id),
-    foreign key fk_product (product_id) references product (id),
-    foreign key fk_product_group (product_group_id) references product_group (id)
+    foreign key fk_product (product_id) references product (id) on delete cascade on update cascade,
+    foreign key fk_product_group (product_group_id) references product_group (id) on delete cascade on update cascade
 );
 
 create table manufacturer
@@ -32,8 +38,8 @@ create table product_group_to_manufacturer
     manufacturer_id  bigint not null,
     primary key (product_group_id, manufacturer_id),
     index idx_manufacturer_id (manufacturer_id),
-    foreign key fk_product_group (product_group_id) references product_group (id),
-    foreign key fk_manufacturer (manufacturer_id) references manufacturer (id)
+    foreign key fk_product_group (product_group_id) references product_group (id) on delete cascade on update cascade,
+    foreign key fk_manufacturer (manufacturer_id) references manufacturer (id) on delete cascade on update cascade
 );
 
 create table product_group_category
@@ -48,8 +54,8 @@ create table product_group_to_product_group_category
     product_group_category_id bigint not null,
     primary key (product_group_id, product_group_category_id),
     index idx_product_group_category_id (product_group_category_id),
-    foreign key fk_product_group (product_group_id) references product_group (id),
-    foreign key fk_product_group_category (product_group_category_id) references product_group_category (id)
+    foreign key fk_product_group (product_group_id) references product_group (id) on delete cascade on update cascade,
+    foreign key fk_product_group_category (product_group_category_id) references product_group_category (id) on delete cascade on update cascade
 );
 
 
@@ -75,8 +81,8 @@ create table product_property_value
     property_value varchar(255) null,
     primary key (product_id, property_id),
     index idx_property_id (property_id),
-    foreign key fk_product (product_id) references product (id),
-    foreign key fk_item_property (property_id) references item_property (id)
+    foreign key fk_product (product_id) references product (id) on delete cascade on update cascade,
+    foreign key fk_item_property (property_id) references item_property (id) on delete cascade on update cascade
 );
 
 
@@ -88,8 +94,8 @@ create table product_group_property_value
     property_value   varchar(255) null,
     primary key (product_group_id, property_id),
     index idx_property_id (property_id),
-    foreign key fk_product_group (product_group_id) references product_group (id),
-    foreign key fk_item_property (property_id) references item_property (id)
+    foreign key fk_product_group (product_group_id) references product_group (id) on delete cascade on update cascade,
+    foreign key fk_item_property (property_id) references item_property (id) on delete cascade on update cascade
 );
 
 
@@ -101,9 +107,6 @@ create table manufacturer_property_value
     property_value  varchar(255) null,
     primary key (manufacturer_id, property_id),
     index idx_property_id (property_id),
-    foreign key fk_manufacturer (manufacturer_id) references manufacturer (id),
-    foreign key fk_item_property (property_id) references item_property (id)
+    foreign key fk_manufacturer (manufacturer_id) references manufacturer (id) on delete cascade on update cascade,
+    foreign key fk_item_property (property_id) references item_property (id) on delete cascade on update cascade
 );
-
-
-

@@ -6,6 +6,8 @@ import com.rost.productwarehouse.itemproperty.ItemPropertiesHolder;
 import com.rost.productwarehouse.itemproperty.service.ItemPropertyService;
 import com.rost.productwarehouse.product.Product;
 import com.rost.productwarehouse.product.dao.ProductDao;
+import com.rost.productwarehouse.productstockdata.ProductStockData;
+import com.rost.productwarehouse.productstockdata.service.ProductStockDataService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
@@ -21,10 +23,12 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductDao productDao;
     private final ItemPropertyService itemPropertyService;
+    private final ProductStockDataService productStockDataService;
 
-    public ProductServiceImpl(ProductDao productDao, ItemPropertyService itemPropertyService) {
+    public ProductServiceImpl(ProductDao productDao, ItemPropertyService itemPropertyService, ProductStockDataService productStockDataService) {
         this.productDao = productDao;
         this.itemPropertyService = itemPropertyService;
+        this.productStockDataService = productStockDataService;
     }
 
     @Override
@@ -34,22 +38,31 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Product> getDecoratedProducts(List<Long> productsIds) {
-        return decorateProducts(productDao.getProducts(productsIds));
+        return decorateProducts(Lists.newArrayList(productDao.getProducts(productsIds).values()));
     }
 
     @Override
     public Product getDecoratedProduct(long productId) {
-        List<Product> products = decorateProducts(productDao.getProducts(Lists.newArrayList(productId)));
+        List<Product> products = decorateProducts(Lists.newArrayList(productDao.getProducts(Lists.newArrayList(productId)).values()));
         return CollectionUtils.isNotEmpty(products) ? products.iterator().next() : null;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public long storeProduct(Product product) {
         if (product.getId() <= 0L) {
             product.setToNew();
         }
+        boolean isNew = product.isNew();
         long productId = productDao.storeProduct(product);
         product.setId(productId);
+
+        if (isNew) {
+            ProductStockData productStockData = new ProductStockData();
+            productStockData.setProductId(productId);
+            productStockDataService.saveProductsStockData(Lists.newArrayList(productStockData));
+        }
+
         if (MapUtils.isNotEmpty(product.getProperties().getProperties())) {
             itemPropertyService.saveItemValues(productId, product.getProperties().getProperties(), ItemLevel.PRODUCT);
         }
@@ -59,8 +72,6 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void deleteProduct(long productId) {
-        itemPropertyService.deleteItemValues(productId, ItemLevel.PRODUCT);
-        productDao.deleteProductFromGroup(productId);
         productDao.deleteProduct(productId);
     }
 

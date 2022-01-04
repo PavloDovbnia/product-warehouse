@@ -91,12 +91,12 @@ public class ItemPropertyValueDaoImpl implements ItemPropertyValueDao {
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
-    public void saveProductValues(long productId, Map<String, ItemPropertyValue<?>> values) {
+    public void saveProductValues(long productId, Map<String, String> values) {
         deleteProductValues(productId, values);
         addProductValues(productId, values);
     }
 
-    private void deleteProductValues(long productId, Map<String, ItemPropertyValue<?>> values) {
+    private void deleteProductValues(long productId, Map<String, String> values) {
         if (MapUtils.isNotEmpty(values)) {
             String sql = "delete v from product_property_value v " +
                     "join item_property p " +
@@ -111,7 +111,7 @@ public class ItemPropertyValueDaoImpl implements ItemPropertyValueDao {
         }
     }
 
-    private void addProductValues(long productId, Map<String, ItemPropertyValue<?>> values) {
+    private void addProductValues(long productId, Map<String, String> values) {
         if (MapUtils.isNotEmpty(values)) {
             String sql = "insert into product_property_value (product_id, property_id, property_value) " +
                     "select :productId, p.id, :value " +
@@ -121,9 +121,9 @@ public class ItemPropertyValueDaoImpl implements ItemPropertyValueDao {
 
             SqlParameterSource[] batchParams = new MapSqlParameterSource[values.size()];
             int i = 0;
-            for (Map.Entry<String, ItemPropertyValue<?>> entry : values.entrySet()) {
+            for (Map.Entry<String, String> entry : values.entrySet()) {
                 batchParams[i] = new MapSqlParameterSource("productId", productId)
-                        .addValue("value", entry.getValue().getValue())
+                        .addValue("value", entry.getValue())
                         .addValue("token", entry.getKey())
                         .addValue("itemLevel", ItemLevel.PRODUCT.name());
                 i++;
@@ -133,12 +133,12 @@ public class ItemPropertyValueDaoImpl implements ItemPropertyValueDao {
     }
 
     @Override
-    public void saveGroupValues(long groupId, Map<String, ItemPropertyValue<?>> values) {
+    public void saveGroupValues(long groupId, Map<String, String> values) {
         deleteGroupValues(groupId, values);
         addGroupValues(groupId, values);
     }
 
-    private void deleteGroupValues(long groupId, Map<String, ItemPropertyValue<?>> values) {
+    private void deleteGroupValues(long groupId, Map<String, String> values) {
         if (MapUtils.isNotEmpty(values)) {
             String sql = "delete v from product_group_property_value v " +
                     "join item_property p " +
@@ -153,7 +153,7 @@ public class ItemPropertyValueDaoImpl implements ItemPropertyValueDao {
         }
     }
 
-    private void addGroupValues(long groupId, Map<String, ItemPropertyValue<?>> values) {
+    private void addGroupValues(long groupId, Map<String, String> values) {
         if (MapUtils.isNotEmpty(values)) {
             String sql = "insert into product_group_property_value (product_group_id, property_id, property_value) " +
                     "select :groupId, p.id, :value " +
@@ -163,9 +163,9 @@ public class ItemPropertyValueDaoImpl implements ItemPropertyValueDao {
 
             SqlParameterSource[] batchParams = new MapSqlParameterSource[values.size()];
             int i = 0;
-            for (Map.Entry<String, ItemPropertyValue<?>> entry : values.entrySet()) {
+            for (Map.Entry<String, String> entry : values.entrySet()) {
                 batchParams[i] = new MapSqlParameterSource("groupId", groupId)
-                        .addValue("value", entry.getValue().getValue())
+                        .addValue("value", entry.getValue())
                         .addValue("token", entry.getKey())
                         .addValue("itemLevel", ItemLevel.PRODUCT_GROUP.name());
                 i++;
@@ -175,12 +175,12 @@ public class ItemPropertyValueDaoImpl implements ItemPropertyValueDao {
     }
 
     @Override
-    public void saveManufacturerValues(long manufacturerId, Map<String, ItemPropertyValue<?>> values) {
+    public void saveManufacturerValues(long manufacturerId, Map<String, String> values) {
         deleteManufacturerValues(manufacturerId, values);
         addManufacturerValues(manufacturerId, values);
     }
 
-    private void deleteManufacturerValues(long manufacturerId, Map<String, ItemPropertyValue<?>> values) {
+    private void deleteManufacturerValues(long manufacturerId, Map<String, String> values) {
         if (MapUtils.isNotEmpty(values)) {
             String sql = "delete v from manufacturer_property_value v " +
                     "join item_property p " +
@@ -195,7 +195,7 @@ public class ItemPropertyValueDaoImpl implements ItemPropertyValueDao {
         }
     }
 
-    private void addManufacturerValues(long manufacturerId, Map<String, ItemPropertyValue<?>> values) {
+    private void addManufacturerValues(long manufacturerId, Map<String, String> values) {
         if (MapUtils.isNotEmpty(values)) {
             String sql = "insert into manufacturer_property_value (manufacturer_id, property_id, property_value) " +
                     "select :manufacturerId, p.id, :value " +
@@ -205,9 +205,9 @@ public class ItemPropertyValueDaoImpl implements ItemPropertyValueDao {
 
             SqlParameterSource[] batchParams = new MapSqlParameterSource[values.size()];
             int i = 0;
-            for (Map.Entry<String, ItemPropertyValue<?>> entry : values.entrySet()) {
+            for (Map.Entry<String, String> entry : values.entrySet()) {
                 batchParams[i] = new MapSqlParameterSource("manufacturerId", manufacturerId)
-                        .addValue("value", entry.getValue().getValue())
+                        .addValue("value", entry.getValue())
                         .addValue("token", entry.getKey())
                         .addValue("itemLevel", ItemLevel.MANUFACTURER.name());
                 i++;

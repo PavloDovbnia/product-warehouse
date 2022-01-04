@@ -33,7 +33,6 @@ public class ProductCategoryServiceImpl implements ProductCategoryService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void removeCategory(long categoryId) {
-        productCategoryDao.removeCategoryGroups(categoryId);
         productCategoryDao.removeCategory(categoryId);
     }
 }

@@ -1,3 +1,6 @@
+### drop table if exists menu;
+### drop table if exists menu_items_group, menu_item;
+
 create table menu_item
 (
     id          bigint       not null auto_increment primary key,
@@ -22,9 +25,9 @@ create table menu
     primary key (role_id, menu_item_id),
     index idx_menu_item_id_role_id_group_id (menu_item_id, role_id, menu_items_group_id),
     index idx_group_id_role_id_item_id (menu_items_group_id, role_id, menu_item_id),
-    foreign key fk_role (role_id) references roles (id),
-    foreign key fk_menu_item (menu_item_id) references menu_item (id),
-    foreign key fk_group (menu_items_group_id) references menu_items_group (id)
+    foreign key fk_role (role_id) references roles (id) on delete cascade on update cascade,
+    foreign key fk_menu_item (menu_item_id) references menu_item (id) on delete cascade on update cascade,
+    foreign key fk_group (menu_items_group_id) references menu_items_group (id) on delete cascade on update cascade
 );
 
 

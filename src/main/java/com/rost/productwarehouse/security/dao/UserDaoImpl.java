@@ -1,7 +1,11 @@
 package com.rost.productwarehouse.security.dao;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.rost.productwarehouse.security.Role;
 import com.rost.productwarehouse.security.User;
+import com.rost.productwarehouse.utils.DbUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -17,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -30,25 +37,59 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
+    public List<User> getUsersByRoles(Collection<Role.Type> roleTypes) {
+        if (CollectionUtils.isNotEmpty(roleTypes)) {
+            String sql = "select u.id user_id, username, email, null as password, r.id role_id, type role_type " +
+                    "from users u " +
+                    "left join user_roles ur on u.id = ur.user_id " +
+                    "left join roles r on ur.role_id = r.id " +
+                    "where r.type in (:roleTypes)";
+            Map<Long, User> users = jdbcTemplate.query(sql, new MapSqlParameterSource("roleTypes", roleTypes.stream().map(Role.Type::name).collect(Collectors.toList())), new UsersExtractor());
+            return Lists.newArrayList(users.values());
+        }
+        return Lists.newArrayList();
+    }
+
+    @Override
+    public Map<Long, User> getUsers(Collection<Long> usersIds) {
+        if (CollectionUtils.isNotEmpty(usersIds)) {
+            String sql = "select u.id user_id, username, email, null as password, r.id role_id, type role_type " +
+                    "from users u " +
+                    "left join user_roles ur on u.id = ur.user_id " +
+                    "left join roles r on ur.role_id = r.id " +
+                    "where u.id in (:usersIds)";
+            return jdbcTemplate.query(sql, new MapSqlParameterSource("usersIds", usersIds), new UsersExtractor());
+        }
+        return Maps.newHashMap();
+    }
+
+    @Override
     public Optional<User> getByUsername(String username) {
         String sql = "select u.id user_id, username, email, password, r.id role_id, type role_type " +
                 "from users u " +
                 "left join user_roles ur on u.id = ur.user_id " +
                 "left join roles r on ur.role_id = r.id " +
                 "where u.username = :username";
-        User user = jdbcTemplate.query(sql, new MapSqlParameterSource("username", username), new UserExtractor());
-        return Optional.ofNullable(user);
+        Map<Long, User> users = jdbcTemplate.query(sql, new MapSqlParameterSource("username", username), new UsersExtractor());
+        return DbUtils.extractOptional(users);
     }
 
     @Override
     public Optional<User> getByEmail(String email) {
-        String sql = "select u.id user_id, username, email, password, r.id role_id, type role_type " +
-                "from users u " +
-                "left join user_roles ur on u.id = ur.user_id " +
-                "left join roles r on ur.role_id = r.id " +
-                "where u.username = :email";
-        User user = jdbcTemplate.query(sql, new MapSqlParameterSource("email", email), new UserExtractor());
-        return Optional.ofNullable(user);
+        return DbUtils.extractOptional(getByEmails(Lists.newArrayList(email)));
+    }
+
+    @Override
+    public Map<String, User> getByEmails(Collection<String> emails) {
+        if (CollectionUtils.isNotEmpty(emails)) {
+            String sql = "select u.id user_id, username, email, null as password, r.id role_id, type role_type " +
+                    "from users u " +
+                    "left join user_roles ur on u.id = ur.user_id " +
+                    "left join roles r on ur.role_id = r.id " +
+                    "where u.email in (:emails)";
+            return jdbcTemplate.query(sql, new MapSqlParameterSource("emails", emails), new UsersMappedToEmailsExtractor());
+        }
+        return Maps.newHashMap();
     }
 
     @Override
@@ -106,21 +147,43 @@ public class UserDaoImpl implements UserDao {
         jdbcTemplate.update(sql, new MapSqlParameterSource("userId", user.getId()));
     }
 
-    private static class UserExtractor implements ResultSetExtractor<User> {
+    private static class UsersMappedToEmailsExtractor implements ResultSetExtractor<Map<String, User>> {
+
         private UserMapper userMapper = new UserMapper();
         private RoleMapper roleMapper = new RoleMapper("role_");
 
         @Override
-        public User extractData(ResultSet rs) throws SQLException, DataAccessException {
-            User user = null;
+        public Map<String, User> extractData(ResultSet rs) throws SQLException, DataAccessException {
+            Map<String, User> users = Maps.newTreeMap();
             while (rs.next()) {
-                if (user == null) {
-                    user = userMapper.mapRow(rs, rs.getRow());
-                }
+                User user = userMapper.mapRow(rs, rs.getRow());
+                users.putIfAbsent(user.getEmail(), user);
+                user = users.get(user.getEmail());
+
                 Role role = roleMapper.mapRow(rs, rs.getRow());
                 user.getRoles().add(role);
             }
-            return user;
+            return users;
+        }
+    }
+
+    private static class UsersExtractor implements ResultSetExtractor<Map<Long, User>> {
+
+        private UserMapper userMapper = new UserMapper();
+        private RoleMapper roleMapper = new RoleMapper("role_");
+
+        @Override
+        public Map<Long, User> extractData(ResultSet rs) throws SQLException, DataAccessException {
+            Map<Long, User> users = Maps.newTreeMap();
+            while (rs.next()) {
+                User user = userMapper.mapRow(rs, rs.getRow());
+                users.putIfAbsent(user.getId(), user);
+                user = users.get(user.getId());
+
+                Role role = roleMapper.mapRow(rs, rs.getRow());
+                user.getRoles().add(role);
+            }
+            return users;
         }
     }
 

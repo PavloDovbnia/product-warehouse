@@ -76,15 +76,16 @@ public class ItemPropertyServiceImpl implements ItemPropertyService {
 
     @Override
     public void saveItemValues(long itemId, Map<String, ItemPropertyValue<?>> values, ItemLevel itemLevel) {
+        Map<String, String> convertedValues = convertForSaving(values);
         switch (itemLevel) {
             case PRODUCT:
-                itemPropertyValueDao.saveProductValues(itemId, values);
+                itemPropertyValueDao.saveProductValues(itemId, convertedValues);
                 break;
             case PRODUCT_GROUP:
-                itemPropertyValueDao.saveGroupValues(itemId, values);
+                itemPropertyValueDao.saveGroupValues(itemId, convertedValues);
                 break;
             case MANUFACTURER:
-                itemPropertyValueDao.saveManufacturerValues(itemId, values);
+                itemPropertyValueDao.saveManufacturerValues(itemId, convertedValues);
                 break;
         }
     }
@@ -106,5 +107,9 @@ public class ItemPropertyServiceImpl implements ItemPropertyService {
 
     private Map<Long, ItemPropertiesHolder> convert(Map<Long, Map<String, ItemPropertyValue<?>>> itemsPropertiesValues) {
         return itemsPropertiesValues.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> new ItemPropertiesHolder(entry.getValue())));
+    }
+
+    private Map<String, String> convertForSaving(Map<String, ItemPropertyValue<?>> values) {
+        return values.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getValue().toString(), (e1, e2) -> e1, Maps::newTreeMap));
     }
 }

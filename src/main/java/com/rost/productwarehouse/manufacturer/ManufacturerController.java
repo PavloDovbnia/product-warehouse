@@ -1,5 +1,6 @@
 package com.rost.productwarehouse.manufacturer;
 
+import com.google.common.collect.Lists;
 import com.rost.productwarehouse.manufacturer.service.ManufacturerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +22,9 @@ public class ManufacturerController {
         return ResponseEntity.ok(manufacturerService.getManufacturers());
     }
 
-    @GetMapping("getDecoratedManufacturers")
-    public ResponseEntity<List<Manufacturer>> getDecoratedManufacturers() {
-        return ResponseEntity.ok(manufacturerService.getDecoratedManufacturers());
+    @GetMapping("getDecoratedManufacturer")
+    public ResponseEntity<Manufacturer> getDecoratedManufacturer(@RequestParam("manufacturerId") long manufacturerId) {
+        return ResponseEntity.ok(manufacturerService.getDecoratedManufacturers(Lists.newArrayList(manufacturerId)).get(manufacturerId));
     }
 
     @PostMapping("/save")

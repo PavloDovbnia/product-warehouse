@@ -1,8 +1,6 @@
 package com.rost.productwarehouse.security.controller;
 
-import com.rost.productwarehouse.menu.dao.MenuDao;
 import com.rost.productwarehouse.security.*;
-import com.rost.productwarehouse.security.dao.RoleDao;
 import com.rost.productwarehouse.security.dao.UserDao;
 import com.rost.productwarehouse.security.jwt.JwtUtils;
 import com.rost.productwarehouse.security.service.UserDetailsImpl;
@@ -29,18 +27,14 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final UserDao userDao;
-    private final RoleDao roleDao;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
-    private final MenuDao menuDao;
 
-    public AuthController(AuthenticationManager authenticationManager, UserDao userDao, RoleDao roleDao, PasswordEncoder passwordEncoder, JwtUtils jwtUtils, MenuDao menuDao) {
+    public AuthController(AuthenticationManager authenticationManager, UserDao userDao, PasswordEncoder passwordEncoder, JwtUtils jwtUtils) {
         this.authenticationManager = authenticationManager;
         this.userDao = userDao;
-        this.roleDao = roleDao;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
-        this.menuDao = menuDao;
     }
 
     @PostMapping("/signin")

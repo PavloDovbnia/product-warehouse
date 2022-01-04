@@ -24,4 +24,16 @@
         <sqlFile path="/changes/init-menu-manager.sql"/>
     </changeSet>
 
+    <changeSet id="6" author="rost">
+        <sqlFile path="/changes/init-product-stock-data.sql"/>
+    </changeSet>
+
+    <changeSet id="7" author="rost">
+        <sqlFile path="/changes/init-order-structure.sql"/>
+    </changeSet>
+
+    <changeSet id="8" author="rost">
+        <sqlFile path="/changes/init-email-sending-data-structure.sql"/>
+    </changeSet>
+
 </databaseChangeLog>

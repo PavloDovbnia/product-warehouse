@@ -8,10 +8,10 @@ import com.rost.productwarehouse.manufacturer.Manufacturer;
 import com.rost.productwarehouse.manufacturer.dao.ManufacturerDao;
 import com.rost.productwarehouse.productgroup.ProductGroup;
 import com.rost.productwarehouse.productgroup.service.ProductGroupService;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -36,8 +36,8 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     }
 
     @Override
-    public List<Manufacturer> getDecoratedManufacturers() {
-        return decorateManufacturers(manufacturerDao.getManufacturers());
+    public Map<Long, Manufacturer> getDecoratedManufacturers(Collection<Long> manufacturersIds) {
+        return decorateManufacturers(manufacturerDao.getManufacturers(manufacturersIds));
     }
 
     @Override
@@ -49,7 +49,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
         manufacturer.setId(manufacturerId);
         manufacturerDao.storeManufacturerGroups(manufacturerId, manufacturer.getProductGroupsIds());
 
-        if (!MapUtils.isNotEmpty(manufacturer.getProperties().getProperties())) {
+        if (MapUtils.isNotEmpty(manufacturer.getProperties().getProperties())) {
             itemPropertyService.saveItemValues(manufacturerId, manufacturer.getProperties().getProperties(), ItemLevel.MANUFACTURER);
         }
         return manufacturerId;
@@ -57,33 +57,37 @@ public class ManufacturerServiceImpl implements ManufacturerService {
 
     @Override
     public void removeManufacturer(long manufacturerId) {
-        manufacturerDao.deleteManufacturerGroups(manufacturerId);
         manufacturerDao.deleteManufacturer(manufacturerId);
     }
 
-    private List<Manufacturer> decorateManufacturers(List<Manufacturer> manufacturers) {
-        if (CollectionUtils.isNotEmpty(manufacturers)) {
-            List<Long> manufacturerIds = manufacturers.stream().map(Manufacturer::getId).collect(Collectors.toList());
+    private Map<Long, Manufacturer> decorateManufacturers(Map<Long, Manufacturer> manufacturers) {
+        if (MapUtils.isNotEmpty(manufacturers)) {
+            List<Long> manufacturerIds = manufacturers.values().stream().map(Manufacturer::getId).collect(Collectors.toList());
             Map<Long, ItemPropertiesHolder> manufacturersProperties = itemPropertyService.getPropertiesValues(manufacturerIds, ItemLevel.MANUFACTURER);
 
-            List<Long> groupsIds = manufacturers.stream().flatMap(m -> m.getProductGroupsIds().stream()).collect(Collectors.toList());
+            List<Long> groupsIds = manufacturers.values().stream().flatMap(m -> m.getProductGroupsIds().stream()).collect(Collectors.toList());
             Map<Long, ProductGroup> mappedGroups = productGroupService.getDecoratedGroups(groupsIds).stream().collect(Collectors.toMap(ProductGroup::getId, Function.identity()));
 
-            manufacturers.forEach(manufacturer -> {
-                ItemPropertiesHolder holder = manufacturersProperties.get(manufacturer.getId());
-                if (holder != null) {
-                    manufacturer.getProperties().addProperties(holder.getProperties());
-                }
-
-                manufacturer.setProductGroups(Lists.newArrayList());
-                manufacturer.getProductGroupsIds().forEach(groupId -> {
-                    ProductGroup group = mappedGroups.get(groupId);
-                    if (group != null) {
-                        manufacturer.getProductGroups().add(group);
-                    }
-                });
+            manufacturers.forEach((key, manufacturer) -> {
+                decorate(manufacturer, manufacturersProperties, mappedGroups);
             });
         }
         return manufacturers;
+    }
+
+    private Manufacturer decorate(Manufacturer manufacturer, Map<Long, ItemPropertiesHolder> manufacturersProperties, Map<Long, ProductGroup> mappedGroups) {
+        ItemPropertiesHolder holder = manufacturersProperties.get(manufacturer.getId());
+        if (holder != null) {
+            manufacturer.getProperties().addProperties(holder.getProperties());
+        }
+
+        manufacturer.setProductGroups(Lists.newArrayList());
+        manufacturer.getProductGroupsIds().forEach(groupId -> {
+            ProductGroup group = mappedGroups.get(groupId);
+            if (group != null) {
+                manufacturer.getProductGroups().add(group);
+            }
+        });
+        return manufacturer;
     }
 }

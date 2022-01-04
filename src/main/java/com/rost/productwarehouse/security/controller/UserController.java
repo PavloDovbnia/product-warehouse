@@ -1,7 +1,6 @@
 package com.rost.productwarehouse.security.controller;
 
 import com.rost.productwarehouse.security.ChangePasswordRequest;
-import com.rost.productwarehouse.security.PasswordResetToken;
 import com.rost.productwarehouse.security.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,14 +21,18 @@ public class UserController {
 
     @PostMapping("/resetPassword")
     public ResponseEntity<String> resetPassword(@RequestParam("email") String email) {
-        PasswordResetToken token = userService.createPasswordResetToken(email);
-        LOG.debug("Token {} to reset password for {}", token.getToken(), email);
+        userService.createPasswordResetToken(email);
         return ResponseEntity.ok("Password Reset Token has been sent by email to " + email);
     }
 
     @PostMapping("/savePassword")
     public void savePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
         userService.changePasswordByToken(changePasswordRequest.getToken(), changePasswordRequest.getNewPassword());
+    }
+
+    @PostMapping("/changePassword")
+    public void changePassword(@RequestBody ChangePasswordRequest changePasswordRequest) {
+        userService.changePassword(changePasswordRequest.getCurrentPassword(), changePasswordRequest.getNewPassword());
     }
 
 }

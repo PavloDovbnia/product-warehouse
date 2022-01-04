@@ -50,8 +50,9 @@ public class ItemPropertyDaoImpl implements ItemPropertyDao {
         if (CollectionUtils.isNotEmpty(itemLevels)) {
             String sql = "select id, token, name, item_level, type, data_type " +
                     "from item_property " +
-                    "where item_level in (:itemLevels) ";
-            SqlParameterSource params = new MapSqlParameterSource("itemLevels", itemLevels.stream().map(ItemLevel::getName).collect(Collectors.toList()));
+                    "where item_level in (:itemLevels) " +
+                    "order by FIELD(item_level, :itemLevels)";
+            SqlParameterSource params = new MapSqlParameterSource("itemLevels", itemLevels.stream().map(ItemLevel::name).collect(Collectors.toList()));
             return jdbcTemplate.query(sql, params, new ItemPropertiesExtractor());
         }
         return Lists.newArrayList();

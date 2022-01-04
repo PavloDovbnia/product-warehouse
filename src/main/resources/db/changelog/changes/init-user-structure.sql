@@ -1,3 +1,7 @@
+# drop table if exists user_roles, password_reset_token;
+# drop table if exists  roles, users;
+
+
 create table roles
 (
     id   bigint      not null auto_increment primary key,
@@ -21,8 +25,8 @@ create table user_roles
     role_id bigint not null,
     primary key (user_id, role_id),
     index idx_role_id (role_id),
-    foreign key fk_user (user_id) references users (id),
-    foreign key fk_role (role_id) references roles (id)
+    foreign key fk_user (user_id) references users (id) on delete cascade on update cascade,
+    foreign key fk_role (role_id) references roles (id) on delete cascade on update cascade
 );
 
 insert into roles (type)
@@ -51,5 +55,5 @@ create table password_reset_token
     created timestamp    not null default CURRENT_TIMESTAMP,
 
     unique index idx_user_id (user_id),
-    foreign key fk_user (user_id) references users (id)
+    foreign key fk_user (user_id) references users (id) on delete cascade on update cascade
 );

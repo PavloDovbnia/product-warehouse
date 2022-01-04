@@ -74,9 +74,6 @@ public class ProductGroupServiceImpl implements ProductGroupService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     @Override
     public void deleteGroup(long groupId) {
-        productGroupDao.deleteGroupFromManufacturer(groupId);
-        productGroupDao.deleteGroupCategory(groupId);
-        productGroupDao.deleteProductsFromGroup(groupId);
         productGroupDao.deleteProductGroup(groupId);
     }
 

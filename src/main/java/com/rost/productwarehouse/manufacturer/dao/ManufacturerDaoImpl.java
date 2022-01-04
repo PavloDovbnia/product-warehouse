@@ -37,10 +37,22 @@ public class ManufacturerDaoImpl implements ManufacturerDao {
 
     @Override
     public List<Manufacturer> getManufacturers() {
-        String sql = "select m.id manufacturer_id, m.name manufacturer_id from manufacturer m " +
+        String sql = "select m.id manufacturer_id, m.name manufacturer_name, gm.product_group_id from manufacturer m " +
                 "left join product_group_to_manufacturer gm " +
                 "on m.id = gm.manufacturer_id";
-        return jdbcTemplate.query(sql, new ManufacturersExtractor());
+        Map<Long, Manufacturer> manufacturers = jdbcTemplate.query(sql, new ManufacturersExtractor());
+        return Lists.newArrayList(manufacturers.values());
+    }
+
+    @Override
+    public Map<Long, Manufacturer> getManufacturers(Collection<Long> manufacturerIds) {
+        if (CollectionUtils.isNotEmpty(manufacturerIds)) {
+            String sql = "select m.id manufacturer_id, m.name manufacturer_name, gm.product_group_id from manufacturer m " +
+                    "left join product_group_to_manufacturer gm " +
+                    "on m.id = gm.manufacturer_id";
+            return jdbcTemplate.query(sql, new ManufacturersExtractor());
+        }
+        return Maps.newHashMap();
     }
 
     @Override
@@ -98,11 +110,11 @@ public class ManufacturerDaoImpl implements ManufacturerDao {
         jdbcTemplate.update(sql, new MapSqlParameterSource("id", manufacturerId));
     }
 
-    private static class ManufacturersExtractor implements ResultSetExtractor<List<Manufacturer>> {
+    private static class ManufacturersExtractor implements ResultSetExtractor<Map<Long, Manufacturer>> {
         private ManufacturerMapper manufacturerMapper = new ManufacturerMapper();
 
         @Override
-        public List<Manufacturer> extractData(ResultSet rs) throws SQLException, DataAccessException {
+        public Map<Long, Manufacturer> extractData(ResultSet rs) throws SQLException, DataAccessException {
             Map<Long, Manufacturer> manufacturers = Maps.newTreeMap();
             while (rs.next()) {
                 Manufacturer mappedManufacturer = manufacturerMapper.mapRow(rs, rs.getRow());
@@ -114,7 +126,7 @@ public class ManufacturerDaoImpl implements ManufacturerDao {
                     manufacturer.getProductGroupsIds().add(groupId);
                 }
             }
-            return Lists.newArrayList(manufacturers.values());
+            return manufacturers;
         }
     }
 
