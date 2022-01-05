@@ -23,7 +23,8 @@ create table order_data
     value      int    not null,
 
     unique index idx_order_product (order_id, product_id),
-    foreign key fk_order (order_id) references `order` (id) on delete cascade on update cascade
+    foreign key fk_order (order_id) references `order` (id) on delete cascade on update cascade,
+    foreign key fk_product (product_id) references product (id) on delete cascade on update cascade
 );
 
 
