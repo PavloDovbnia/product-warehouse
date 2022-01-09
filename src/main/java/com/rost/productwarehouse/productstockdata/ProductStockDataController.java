@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -17,6 +18,11 @@ public class ProductStockDataController {
 
     public ProductStockDataController(ProductStockDataService productStockDataService) {
         this.productStockDataService = productStockDataService;
+    }
+
+    @GetMapping("getValues")
+    public ResponseEntity<List<ProductStockData>> getProductsStockData() {
+        return ResponseEntity.ok(productStockDataService.getDecoratedProductsStockData());
     }
 
     @GetMapping("getGroup")

@@ -1,5 +1,5 @@
-### drop table if exists menu;
-### drop table if exists menu_items_group, menu_item;
+drop table if exists menu;
+drop table if exists menu_items_group, menu_item;
 
 create table menu_item
 (
@@ -31,17 +31,15 @@ create table menu
 );
 
 
-
 insert into menu_item (`name`, url, access_type)
 values ('Products', '/api/product/getAll', 'READ_WRITE'),
        ('Categories', '/api/product/category/getAll', 'READ_WRITE'),
        ('Groups', '/api/product/group/getAll', 'READ_WRITE'),
        ('Manufacturers', '/api/product/manufacturer/getAll', 'READ_WRITE'),
        ('Properties', '/api/product/property/getAll', 'READ_WRITE'),
+       ('Stock Data', '/api/stock/getValues', 'READ_WRITE'),
        ('Orders', '/api/order/getAll', 'READ_WRITE'),
-       ('Providers', '/api/provider/getAll', 'READ_WRITE'),
-       ('Consumers', '/api/consumer/getAll', 'READ_WRITE'),
-       ('Register', '/api/auth/registerUser', 'READ_WRITE');
+       ('Users', '/api/auth/registerUser', 'READ_WRITE');
 
 
 insert into menu_items_group (`name`)
@@ -53,14 +51,25 @@ select r.id, i.id, g.id
 from roles r
          join menu_item i
               on i.url like '/api/product/%'
+                  and i.access_type = 'READ_WRITE'
          left join menu_items_group g
                    on g.name = 'Products'
-where r.type = 'ROLE_ADMIN';
+where r.type in ('ROLE_ADMIN', 'ROLE_MANAGER');
 
 
 insert into menu (role_id, menu_item_id, menu_items_group_id)
 select r.id, i.id, null
 from roles r
          join menu_item i
-              on i.url in ('/api/provider/getAll', '/api/consumer/getAll', '/api/auth/registerUser')
-where r.type = 'ROLE_ADMIN';
+              on i.url in ('/api/stock/getValues', '/api/order/getAll')
+                  and i.access_type = 'READ_WRITE'
+where r.type in ('ROLE_ADMIN', 'ROLE_MANAGER');
+
+
+insert into menu (role_id, menu_item_id, menu_items_group_id)
+select r.id, i.id, null
+from roles r
+         join menu_item i
+              on i.url in ('/api/auth/registerUser')
+                  and i.access_type = 'READ_WRITE'
+where r.type in ('ROLE_ADMIN');

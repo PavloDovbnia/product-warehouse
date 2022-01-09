@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Sets;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Objects;
-import java.util.Set;
 
 public class User implements Serializable {
 
@@ -16,7 +16,7 @@ public class User implements Serializable {
     private String email;
     private String password;
 
-    private Set<Role> roles = Sets.newHashSet();
+    private Collection<Role> roles = Sets.newHashSet();
 
     public User() {
     }
@@ -58,6 +58,7 @@ public class User implements Serializable {
         this.email = email;
     }
 
+    @JsonIgnore
     public String getPassword() {
         return password;
     }
@@ -66,11 +67,11 @@ public class User implements Serializable {
         this.password = password;
     }
 
-    public Set<Role> getRoles() {
+    public Collection<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<Role> roles) {
+    public void setRoles(Collection<Role> roles) {
         this.roles = roles;
     }
 

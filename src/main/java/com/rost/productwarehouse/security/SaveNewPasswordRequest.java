@@ -1,16 +1,16 @@
 package com.rost.productwarehouse.security;
 
-public class ChangePasswordRequest {
+public class SaveNewPasswordRequest {
 
-    private String currentPassword;
+    private String token;
     private String newPassword;
 
-    public String getCurrentPassword() {
-        return currentPassword;
+    public String getToken() {
+        return token;
     }
 
-    public void setCurrentPassword(String currentPassword) {
-        this.currentPassword = currentPassword;
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public String getNewPassword() {

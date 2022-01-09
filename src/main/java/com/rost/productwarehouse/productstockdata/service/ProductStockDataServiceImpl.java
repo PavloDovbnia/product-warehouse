@@ -5,6 +5,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.rost.productwarehouse.order.Order;
 import com.rost.productwarehouse.order.OrderData;
+import com.rost.productwarehouse.product.Product;
+import com.rost.productwarehouse.product.dao.ProductDao;
 import com.rost.productwarehouse.productgroup.ProductGroup;
 import com.rost.productwarehouse.productgroup.dao.ProductGroupDao;
 import com.rost.productwarehouse.productstockdata.ProductStockData;
@@ -23,10 +25,17 @@ public class ProductStockDataServiceImpl implements ProductStockDataService {
 
     private final ProductStockDataDao productStockDataDao;
     private final ProductGroupDao productGroupDao;
+    private final ProductDao productDao;
 
-    public ProductStockDataServiceImpl(ProductStockDataDao productStockDataDao, ProductGroupDao productGroupDao) {
+    public ProductStockDataServiceImpl(ProductStockDataDao productStockDataDao, ProductGroupDao productGroupDao, ProductDao productDao) {
         this.productStockDataDao = productStockDataDao;
         this.productGroupDao = productGroupDao;
+        this.productDao = productDao;
+    }
+
+    @Override
+    public List<ProductStockData> getDecoratedProductsStockData() {
+        return decorate(productStockDataDao.getProductsStockData());
     }
 
     @Override
@@ -127,5 +136,18 @@ public class ProductStockDataServiceImpl implements ProductStockDataService {
             }
         }
         return true;
+    }
+
+    private List<ProductStockData> decorate(List<ProductStockData> productsStockData) {
+        if (CollectionUtils.isNotEmpty(productsStockData)) {
+            List<Long> productsIds = productsStockData.stream().map(ProductStockData::getProductId).collect(Collectors.toList());
+            Map<Long, Product> products = productDao.getProducts(productsIds);
+
+            return productsStockData.stream().peek(productStockData -> {
+                Product product = products.get(productStockData.getProductId());
+                productStockData.setProduct(product);
+            }).collect(Collectors.toList());
+        }
+        return productsStockData;
     }
 }

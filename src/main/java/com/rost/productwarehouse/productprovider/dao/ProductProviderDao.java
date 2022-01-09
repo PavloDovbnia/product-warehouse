@@ -14,7 +14,7 @@ public interface ProductProviderDao {
 
     Map<Long, ProductProvider> getProviders(Collection<Long> providersIds);
 
-    void saveProvider(ProductProvider provider);
+    void saveProviders(Collection<ProductProvider> providers);
 
-    void deleteProvider(long providerId);
+    void deleteProviders(Collection<Long> providersIds);
 }

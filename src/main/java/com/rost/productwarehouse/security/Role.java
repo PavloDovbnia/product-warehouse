@@ -10,16 +10,22 @@ public class Role implements Serializable {
     private static final long serialVersionUID = 1L;
 
     public enum Type {
-        ROLE_MANAGER("MANAGER"), ROLE_PRODUCT_PROVIDER("PRODUCT_PROVIDER"), ROLE_PRODUCT_CONSUMER("PRODUCT_CONSUMER"), ROLE_ADMIN("ADMIN");
+        ROLE_MANAGER("MANAGER", 1), ROLE_PRODUCT_PROVIDER("PRODUCT_PROVIDER", 2), ROLE_PRODUCT_CONSUMER("PRODUCT_CONSUMER", 3), ROLE_ADMIN("ADMIN", 0);
 
         private String name;
+        private int sort;
 
-        Type(String name) {
+        Type(String name, int sort) {
             this.name = name;
+            this.sort = sort;
         }
 
         public String getName() {
             return name;
+        }
+
+        public int getSort() {
+            return sort;
         }
 
         public static Optional<Type> of(String type) {

@@ -13,6 +13,8 @@ public interface ProductStockDataService {
 
     int DEFAULT_PRODUCT_ORDERING_VALUE = 20;
 
+    List<ProductStockData> getDecoratedProductsStockData();
+
     Map<Long, ProductStockData> getGroupProductsStockData(long groupId);
 
     Map<Long, ProductStockData> getProductsStockData(List<Long> productsIds);

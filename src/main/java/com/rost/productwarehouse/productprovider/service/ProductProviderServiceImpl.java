@@ -2,6 +2,7 @@ package com.rost.productwarehouse.productprovider.service;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.rost.productwarehouse.product.Product;
 import com.rost.productwarehouse.product.dao.ProductDao;
 import com.rost.productwarehouse.productprovider.ProductProvider;
@@ -9,12 +10,14 @@ import com.rost.productwarehouse.productprovider.dao.ProductProviderDao;
 import com.rost.productwarehouse.security.Role;
 import com.rost.productwarehouse.security.User;
 import com.rost.productwarehouse.security.dao.UserDao;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,13 +49,36 @@ public class ProductProviderServiceImpl implements ProductProviderService {
     }
 
     @Override
-    public void saveProvider(ProductProvider provider) {
-        productProviderDao.saveProvider(provider);
+    public void saveProductProviders(long productId, Set<Long> providersToAdd, Set<Long> providersToDelete) {
+        if (CollectionUtils.intersection(providersToAdd, providersToDelete).isEmpty()) {
+            List<Long> providers = Lists.newArrayList(providersToAdd);
+            providers.addAll(providersToDelete);
+            Map<Long, ProductProvider> storedProviders = productProviderDao.getProviders(providers);
+
+            List<ProductProvider> providersToSave = storedProviders.values().stream().peek(provider -> {
+                if (providersToAdd.contains(provider.getProviderId())) {
+                    provider.getProductsIds().add(productId);
+                }
+                if (providersToDelete.contains(provider.getProviderId())) {
+                    if (provider.getProductsIds().contains(productId)) {
+                        provider.setProductsIds(provider.getProductsIds().stream().filter(id -> id != productId).collect(Collectors.toCollection(Sets::newTreeSet)));
+                    }
+                }
+            }).collect(Collectors.toList());
+            productProviderDao.saveProviders(providersToSave);
+        } else {
+            throw new RuntimeException("Providers To Add Product and Providers To Delete Product are intersected");
+        }
     }
 
     @Override
-    public void deleteProvider(long providerId) {
-        productProviderDao.deleteProvider(providerId);
+    public void saveProviders(Collection<ProductProvider> providers) {
+        productProviderDao.saveProviders(providers);
+    }
+
+    @Override
+    public void deleteProviders(Collection<Long> providersIds) {
+        productProviderDao.deleteProviders(providersIds);
     }
 
     private Map<Long, ProductProvider> decorateProviders(Map<Long, ProductProvider> providers) {

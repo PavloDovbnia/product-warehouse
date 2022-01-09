@@ -1,6 +1,7 @@
 package com.rost.productwarehouse.productprovider;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.rost.productwarehouse.productprovider.service.ProductProviderService;
 import com.rost.productwarehouse.security.Role;
 import com.rost.productwarehouse.security.User;
@@ -49,13 +50,19 @@ public class ProductProviderController {
 
     @PostMapping("save")
     public ResponseEntity<List<ProductProvider>> save(@RequestBody ProductProvider provider) {
-        productProviderService.saveProvider(provider);
+        productProviderService.saveProviders(Lists.newArrayList(provider));
+        return ResponseEntity.ok(Lists.newArrayList(productProviderService.getProviders().values()));
+    }
+
+    @PostMapping("save-product-providers")
+    public ResponseEntity<List<ProductProvider>> saveProductProviders(@RequestBody ProductProvidersDto providers) {
+        productProviderService.saveProductProviders(providers.getProductId(), Sets.newHashSet(providers.getProvidersIdsToAdd()), Sets.newHashSet(providers.getProvidersIdsToDelete()));
         return ResponseEntity.ok(Lists.newArrayList(productProviderService.getProviders().values()));
     }
 
     @DeleteMapping("delete")
     public ResponseEntity<List<ProductProvider>> delete(@RequestParam("providerId") long providerId) {
-        productProviderService.deleteProvider(providerId);
+        productProviderService.deleteProviders(Lists.newArrayList(providerId));
         return ResponseEntity.ok(Lists.newArrayList(productProviderService.getProviders().values()));
     }
 }

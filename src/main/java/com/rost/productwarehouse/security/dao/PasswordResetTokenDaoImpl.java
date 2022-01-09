@@ -32,6 +32,18 @@ public class PasswordResetTokenDaoImpl implements PasswordResetTokenDao {
     }
 
     @Override
+    public void deleteToken(long userId) {
+        String sql = "delete from password_reset_token where user_id = :userId";
+        jdbcTemplate.update(sql, new MapSqlParameterSource("userId", userId));
+    }
+
+    @Override
+    public void deleteTokens(LocalDateTime fromDate) {
+        String sql = "delete from password_reset_token where created < :fromDate";
+        jdbcTemplate.update(sql, new MapSqlParameterSource("fromDate", Timestamp.valueOf(fromDate)));
+    }
+
+    @Override
     public Optional<PasswordResetToken> getToken(String token) {
         String sql = "select token, user_id, created from password_reset_token where token = :token";
         PasswordResetToken passwordResetToken = DbUtils.extract(jdbcTemplate.query(sql, new MapSqlParameterSource("token", token), (rs, rowNum) ->

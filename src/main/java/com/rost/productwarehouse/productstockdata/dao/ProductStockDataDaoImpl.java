@@ -1,5 +1,6 @@
 package com.rost.productwarehouse.productstockdata.dao;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.rost.productwarehouse.productstockdata.ProductStockData;
 import org.apache.commons.collections4.CollectionUtils;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 @Repository
@@ -26,6 +28,13 @@ public class ProductStockDataDaoImpl implements ProductStockDataDao {
 
     public ProductStockDataDaoImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+    }
+
+    @Override
+    public List<ProductStockData> getProductsStockData() {
+        String sql = "select product_id, stock_value " +
+                "from product_stock_data ";
+        return Lists.newArrayList(jdbcTemplate.query(sql, new ProductsStockDataExtractor()).values());
     }
 
     @Override

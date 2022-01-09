@@ -64,6 +64,15 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
+    public List<User> getUsers() {
+        String sql = "select u.id user_id, username, email, null as password, r.id role_id, type role_type " +
+                "from users u " +
+                "left join user_roles ur on u.id = ur.user_id " +
+                "left join roles r on ur.role_id = r.id ";
+        return Lists.newArrayList(jdbcTemplate.query(sql, new UsersExtractor()).values());
+    }
+
+    @Override
     public Optional<User> getByUsername(String username) {
         String sql = "select u.id user_id, username, email, password, r.id role_id, type role_type " +
                 "from users u " +
@@ -126,9 +135,9 @@ public class UserDaoImpl implements UserDao {
     }
 
     private void editUser(User user) {
-        String sql = "update users set password = :password where username = :username";
+        String sql = "update users set email = :email where username = :username";
         SqlParameterSource params = new MapSqlParameterSource("username", user.getUsername())
-                .addValue("password", user.getPassword());
+                .addValue("email", user.getEmail());
         jdbcTemplate.update(sql, params);
     }
 
@@ -145,6 +154,12 @@ public class UserDaoImpl implements UserDao {
     private void deleteUserRoles(User user) {
         String sql = "delete from user_roles where user_id = :userId";
         jdbcTemplate.update(sql, new MapSqlParameterSource("userId", user.getId()));
+    }
+
+    @Override
+    public void deleteUser(long userId) {
+        String sql = "delete from users where id = :userId";
+        jdbcTemplate.update(sql, new MapSqlParameterSource("userId", userId));
     }
 
     private static class UsersMappedToEmailsExtractor implements ResultSetExtractor<Map<String, User>> {

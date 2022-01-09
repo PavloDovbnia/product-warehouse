@@ -14,6 +14,8 @@ public interface UserDao {
 
     Map<Long, User> getUsers(Collection<Long> usersIds);
 
+    List<User> getUsers();
+
     Optional<User> getByUsername(String username);
 
     Optional<User> getByEmail(String email);
@@ -23,4 +25,6 @@ public interface UserDao {
     void save(User user);
 
     void saveUserPassword(long userId, String password);
+
+    void deleteUser(long userId);
 }

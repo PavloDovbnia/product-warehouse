@@ -1,5 +1,7 @@
 package com.rost.productwarehouse.productstockdata;
 
+import com.rost.productwarehouse.product.Product;
+
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -8,6 +10,7 @@ public class ProductStockData implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private long productId;
+    private Product product;
     private int stockValue;
 
     public ProductStockData() {
@@ -24,6 +27,14 @@ public class ProductStockData implements Serializable {
 
     public void setProductId(long productId) {
         this.productId = productId;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public int getStockValue() {
